@@ -41,12 +41,12 @@ class GitRepository(object):
     conf = None
     def __init__(self, path, force=False):
         self.worktree = path
-        self.getdir = os.path.join(path, ".git")
+        self.gitdir = os.path.join(path, ".git")
         if not(force or os.path.isdir(self.gitdir)):
             raise Exception("Not a git repository %s" % path)
 
         #read config file in .git/config
-        self.conf = configparser.ConfigParser
+        self.conf = configparser.ConfigParser()
         cf = repo_file(self, "config")
         if cf and os.path.exists(cf):
             self.conf.read([cf])

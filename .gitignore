@@ -1,0 +1,10 @@
+__pycache__
+*/vcs.xml
+*.log
+*.tmp
+.DS_Store
+.env
+.idea/
+.vscode/
+node_modules/
+dist/
