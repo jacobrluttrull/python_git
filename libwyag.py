@@ -154,3 +154,80 @@ def repo_find(path=".", required=True):
         else:
             return None
     return repo_find(parent, required)
+class GitObject(object):
+    def __init__(self, data=None):
+        if data != None:
+            self.deserialize(data)
+        else:
+            self.init()
+    def serialize(self):
+        """This function MUST be implemented by subclasses.
+
+        It must read the object's contents from self.data, a byte string, and
+        do whatever it needs to to to populate the object's other fields."""
+        raise Exception("Unimplemented!")
+    def deserialize(self, data):
+        """This function MUST be implemented by subclasses.
+
+        It must fill self.data with the object's serialized
+        representation, a byte string."""
+        raise Exception("Unimplemented!")
+    def init(self):
+        pass
+def object_read(repo, sha):
+    """Read object with the given SHA1 hash from the repository."""
+    path = repo_file(repo, "objects, sha[0:2], sha[2:]")
+    if not os.path.isfile(path):
+        return None
+    with open(path, "rb") as f:
+        raw = zlib.decompress(f.read())
+
+        x = raw.find(b"")
+        fmt = raw[0:x]
+
+        y = raw.find(b" \x00", x + 1)
+        size = int(raw[x + 1:y].decode("ascii"))
+        if size != len(raw) - y - 1:
+            raise Exception("Malformed object {0}: bad length".format(sha))
+        match fmt:
+            case b'commit':
+                c= GitCommit()
+            case b'tree':
+                c= GitTree()
+            case b'blob':
+                c= GitBlob()
+            case b'tag':
+                c= GitTag()
+            case _:
+                raise Exception("Unknown type {0} for object {1}".format(fmt.decode("ascii"), sha))
+        return c(raw[y + 2:])
+def object_write(obj, repo):
+    data = obj.serialize()
+    result = obj.fmt + b" " + str(len(data)).encode() + b"\x00" + data
+    sha = hashlib.sha1(result).hexdigest()
+
+    if repo:
+        path = repo_file(repo, "objects", sha[0:2], sha[2:], mkdir=True)
+        with open(path, "wb") as f:
+            f.write(zlib.compress(result))
+    return sha
+class GitBlob(GitObject):
+    fmt = b'blob'
+    def serialize(self):
+        return self.blobdata
+    def deserialize(self, data):
+        self.blobdata = data
+
+argsp = argsubparsers.add_parser("cat-file", help="Provide content or type and size information for repository objects")
+argsp.add_argument("type", metavar="type", help="Specify the type")
+argsp.add_argument("object", metavar="object", help="The object to display")
+
+def cmd_cat_file(args):
+    repo = repo_find()
+    cat_file(repo, args.object, args.type.encode())
+def cat_file(repo, objname, fmt):
+    obj = object_read(repo, object_find(repo, obj, fmt=fmt))
+    sys.stdout.buffer.write(obj.serialize())
+def object_find(repo, name, fmt=None, follow=True):
+    return name
+
