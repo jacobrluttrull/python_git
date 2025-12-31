@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.13 (PyCharmMiscProject)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10.12 WSL (Ubuntu): (/usr/bin/python3)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12.3 WSL (Ubuntu): (/home/mrdetails/.virtualenvs/python_git/bin/python)" project-jdk-type="Python SDK" />
 </project>
