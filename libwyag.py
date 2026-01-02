@@ -516,3 +516,47 @@ def tree_checkout(repo, tree, path):
             # @TODO Support symlinks (identified by mode 12****)
             with open(dest, 'wb') as f:
                 f.write(obj.blobdata)
+#7.1 refs
+
+def ref_resolve(repo, ref):
+    path = repo_file(repo, ref)
+
+    if not os.path.exists(path):
+        return None
+
+    with open(path, 'rb') as fp:
+        data = fp.read().strip()
+
+        if data.startswith("ref: "):
+            return ref_resolve(repo, data[5:])
+        else:
+            return data
+def ref_list(repo, path=None):
+    if not path:
+        path = repo_dir(repo)
+    ret = dict()
+
+    for f in os.listdir(path):
+        can = os.path.join(path, f)
+        if os.path.isdir(can):
+            ret[f] = ref_list(repo, can)
+        else:
+            ret = ref_resolve(repo, can)
+    return ret
+argsp = argsubparsers.add_parser("show-ref", help="List references.")
+
+def cmd_show_ref(args):
+    repo = repo_find()
+    refs = ref_list(repo)
+    show_ref(repo, refs, prefix="refs")
+
+def show_ref(repo, refs, with_hash=True, prefix=""):
+    if prefix:
+        prefix = prefix + '/'
+    for k, v in refs.items():
+        if type(v) == str and with_hash:
+            print (f"{v} {prefix}{k}")
+        elif type(v) == str:
+            print (f"{prefix}{k}")
+        else:
+            show_ref(repo, v, with_hash=with_hash, prefix=f"{prefix}{k}")
