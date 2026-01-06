@@ -18,3 +18,5 @@ How to use
 Notes
 - Focus is on learning and experimentation.
 - Expect incomplete features — that's intentional for educational purposes.
+
+This is the article tutuorial I followed go give it a read :) https://wyag.thb.lt/#intro
